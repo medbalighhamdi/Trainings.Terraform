@@ -17,6 +17,12 @@ provider "azurerm" {
   subscription_id = local.subscription_id
 }
 
+variable "postfix" {
+  description = "Postfix to append to resource names for uniqueness"
+  type        = string
+  default     = ""
+}   
+
 module "global" {
   source          = "../../modules/global"
   region          = local.region
@@ -52,4 +58,8 @@ module "compute" {
   environement              = local.environment
   region                    = local.region
   subscription_id           = local.subscription_id
+}
+
+output "resource_group_name" {
+  value = module.global.rg_name
 }

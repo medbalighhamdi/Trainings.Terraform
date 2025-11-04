@@ -1,0 +1,32 @@
+{
+  "checks": [
+    {
+      "code": "azure001",
+      "description": "First check on my terraform scripts",
+      "impact": "Nothing",
+      "resolution": "Please do te following:",
+      "requiredTypes": [
+        "resource",
+        "data",
+        "module",
+        "variable"
+      ],
+      "requiredLabels": [
+        "azurerm_storage_account",
+        "azurerm_storage_blob",
+        "azurerm_virtual_network",
+        "azurerm_subnet"
+      ],
+      "severity": "ERROR",
+      "matchSpec": {
+        "name": "tags",
+        "action": "contains",
+        "value": "example"
+      },
+      "errorMessage": "Error",
+      "relatedLinks": [
+        ""
+      ]
+    }
+  ]
+}
