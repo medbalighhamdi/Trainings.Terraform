@@ -4,6 +4,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "=4.1.0"
     }
+    random = {
+      source = "hashicorp/random"
+      version = "~> 3.1"
+    }
   }
   backend "azurerm" {
     key                  = "structure.terraform.tfstate"
@@ -18,6 +22,20 @@ provider "azurerm" {
   subscription_id = var.subscription
 }
 
+resource "random_string" "acr_suffix" {
+  length = 6
+  special =  false
+  lower = true
+  numeric = true
+}
+
+resource "azurerm_container_registry" "acr-kubernetes-001" {
+  name = "acr${var.environment}${random_string.acr_suffix.result}"
+  sku = "Basic"
+  resource_group_name = var.resource_group_name
+  location = var.region
+  admin_enabled = true
+}
 
 resource "azurerm_kubernetes_cluster" "aks-kubernetes-001" {
   name                = "aks-${var.environment}-001"
@@ -32,4 +50,13 @@ resource "azurerm_kubernetes_cluster" "aks-kubernetes-001" {
   identity {
     type = "SystemAssigned"
   }
+  depends_on = [ azurerm_container_registry.acr-kubernetes-001 ]
+}
+
+resource "azurerm_role_assignment" "cluster-registry-access" {
+  principal_id = azurerm_kubernetes_cluster.aks-kubernetes-001.kubelet_identity[0].object_id
+  scope = azurerm_container_registry.acr-kubernetes-001.id
+  role_definition_name = "AcrPull"
+  depends_on = [ azurerm_container_registry.acr-kubernetes-001, azurerm_kubernetes_cluster.aks-kubernetes-001 ]
+  skip_service_principal_aad_check = true
 }
