@@ -10,7 +10,7 @@ terraform {
     }
   }
   backend "azurerm" {
-    key                  = "structure.terraform.tfstate"
+    key                  = "kubernetes.terraform.tfstate"
     storage_account_name = "sttbasics001"
     resource_group_name  = "rg-global"
     container_name       = "tfstate"
@@ -51,6 +51,23 @@ resource "azurerm_kubernetes_cluster" "aks-kubernetes-001" {
     type = "SystemAssigned"
   }
   depends_on = [ azurerm_container_registry.acr-kubernetes-001 ]
+}
+
+resource "azurerm_kubernetes_cluster_node_pool" "npuser001" {
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.aks-kubernetes-001.id
+  name = "npuser001"
+  node_taints = [ "workload=backend:NoSchedule" ]
+  node_count = 2
+  depends_on = [ azurerm_kubernetes_cluster.aks-kubernetes-001 ]
+  vm_size = "Standard_D4ds_v5"
+}
+resource "azurerm_kubernetes_cluster_node_pool" "npuser002" {
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.aks-kubernetes-001.id
+  name = "npuser002"
+  node_taints = [ "workload=frontend:NoSchedule" ]
+  node_count = 2
+  depends_on = [ azurerm_kubernetes_cluster.aks-kubernetes-001, azurerm_kubernetes_cluster_node_pool.npuser001 ]
+  vm_size = "Standard_D4ds_v5"
 }
 
 resource "azurerm_role_assignment" "cluster-registry-access" {

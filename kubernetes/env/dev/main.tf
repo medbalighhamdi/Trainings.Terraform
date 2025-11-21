@@ -6,7 +6,7 @@ terraform {
     }
   }
   backend "azurerm" {
-    key                  = "structure.terraform.tfstate"
+    key                  = "kubernetes.terraform.tfstate"
     storage_account_name = "sttbasics001"
     resource_group_name  = "rg-global"
     container_name       = "tfstate"
